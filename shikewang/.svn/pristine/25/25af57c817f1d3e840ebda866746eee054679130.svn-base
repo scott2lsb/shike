@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <RelativeLayout
+        android:id="@+id/teacher_account1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="账户信息"
+            android:textSize="30dp"
+            android:textColor="@color/red_color"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/teacher_account2"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/teacher_account1" >
+        
+        <android.support.v4.view.ViewPager
+            android:id="@+id/teacher_account_viewpager"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+            </android.support.v4.view.ViewPager>"
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/teacher_account_bottom"
+      android:layout_width="fill_parent"
+        android:layout_height="55dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="-24dp"
+        android:background="@color/bottom_widow_color"
+        android:orientation="horizontal" >
+          <ImageView
+            android:id="@+id/teacher_account_imageview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginRight="30dp"
+            android:onClick="true"
+            android:padding="10dp"
+            android:src="@drawable/select_trees_points" />
+
+        <TextView
+            android:id="@+id/teacher_account_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="109dp"
+            android:drawableTop="@drawable/select_back"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="返回"
+            android:textColor="@color/button_typeface_color"
+            android:textSize="16dp" />
+
+        <TextView
+            android:id="@+id/teacher_account_agree"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginLeft="14dp"
+            android:layout_toRightOf="@+id/teacher_account_back"
+            android:drawableTop="@drawable/select_confirm1"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="确定"
+            android:textColor="@color/button_typeface_color"
+            android:textSize="16dp" />
+   
+        
+    </RelativeLayout>
+
+</RelativeLayout>

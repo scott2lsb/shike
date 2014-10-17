@@ -1,0 +1,133 @@
+package com.yshow.shike.fragments;
+import java.util.ArrayList;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
+import android.widget.ListView;
+import com.yshow.shike.R;
+import com.yshow.shike.adapter.SKMessageAdapter;
+import com.yshow.shike.entity.SKMessageList;
+import com.yshow.shike.service.MySKService;
+import com.yshow.shike.service.MySKService.MyIBinder;
+import com.yshow.shike.utils.MyAsyncHttpResponseHandler;
+import com.yshow.shike.utils.SKAsyncApiController;
+import com.yshow.shike.utils.SKResolveJsonUtil;
+public class Fragment_Message extends Fragment implements OnScrollListener,ServiceConnection {
+	private View view = null;
+	private static ListView mListview;
+	private static Context context;
+	private static int page = 1;
+	private static ArrayList<SKMessageList> resolveMessage;
+	private static SKMessageAdapter skMessageAdapter;
+	private MyIBinder binder;
+	private int lastVisibleIndex;
+	/**
+	 *单例对象实例
+	 */
+	private static Fragment_Message instance = null;
+	public synchronized static Fragment_Message getInstance() {
+		if (instance == null) {
+			instance = new Fragment_Message();
+		}
+		return instance;
+	}
+	public static Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			switch (msg.what) {
+			case MySKService.HAVE_NEW_MESSAGE:
+				getSKMessage();
+				break;
+			case 5168:
+				if (mListview != null) {
+					SKMessageAdapter adapter = (SKMessageAdapter) mListview.getAdapter();
+					if (adapter != null) {
+						adapter.Dete_Mess();
+					}
+				}
+				break;
+			}
+		}
+	};
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,Bundle savedInstanceState) {
+		context = inflater.getContext();
+		view = inflater.inflate(R.layout.fragment_message, null);
+		initView();
+		Intent service = new Intent(context, MySKService.class);
+		context.bindService(service, this, Context.BIND_AUTO_CREATE);
+		return view;
+	}
+	private void initView() {
+		mListview = (ListView) view.findViewById(R.id.listview);
+		mListview.setOnScrollListener(this);
+		getSKMessage();
+	}
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+		context.unbindService(this);
+	}
+	private static void getSKMessage() {
+		page = 1;
+		SKAsyncApiController.skGetMessage(page, new MyAsyncHttpResponseHandler(context, true) {
+			@Override
+			public void onSuccess(String json) {
+				boolean isSuccess = SKResolveJsonUtil.getInstance().resolveIsSuccess(json,context);
+				if (isSuccess) {
+					System.out.println("********************打印消息列表*****************"+json);
+					resolveMessage = SKResolveJsonUtil.getInstance().resolveMessage(json);
+					skMessageAdapter = new SKMessageAdapter(context,resolveMessage);
+					mListview.setAdapter(skMessageAdapter);
+					page++;
+				}
+			}
+		});
+	}
+	private void getModeSKMessage(int pagea) {
+		SKAsyncApiController.skGetMessage(page, new MyAsyncHttpResponseHandler(context, true) {
+			@Override
+			public void onSuccess(String json) {
+				super.onSuccess(json);
+				boolean isSuccess = SKResolveJsonUtil.getInstance().resolveIsSuccess(json,getActivity());
+				if (isSuccess) {
+					ArrayList<SKMessageList> more = SKResolveJsonUtil.getInstance().resolveMessage(json);
+					if (more.size() > 0) {
+						skMessageAdapter.addMordList(more);
+						page++;
+					}
+				}
+			}
+
+		});
+	}
+	@Override
+	public void onScrollStateChanged(AbsListView view, int scrollState) {
+		if (scrollState == OnScrollListener.SCROLL_STATE_IDLE
+				&& lastVisibleIndex == skMessageAdapter.getCount()) {
+			getModeSKMessage(page);
+		}
+	}
+	@Override
+	public void onScroll(AbsListView view, int firstVisibleItem,
+			int visibleItemCount, int totalItemCount) {
+		lastVisibleIndex = firstVisibleItem + visibleItemCount;
+	}
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		binder = (MyIBinder) service;
+		binder.setHandler(handler);
+	}
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+	}
+}

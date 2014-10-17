@@ -1,0 +1,32 @@
+package com.yshow.shike.utils;
+import android.content.Context;
+import android.util.Log;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+public class MyAsyncHttpResponseHandler extends AsyncHttpResponseHandler {
+	private ProgressDialogUtil progress;
+	private boolean isShow;
+	public MyAsyncHttpResponseHandler(Context context, boolean isShow) {
+		this.isShow = isShow;
+		this.progress = new ProgressDialogUtil(context);
+	}
+	@Override
+	public void onFinish() {
+		super.onFinish();
+		if (isShow) {
+			progress.dismiss();
+		}
+	}
+	@Override
+	public void onStart() {
+		super.onStart();
+		if (isShow) {
+			progress.show();
+		}
+	}
+
+    @Override
+    public void onSuccess(String s) {
+        Log.i("result","返回:"+s);
+
+    }
+}

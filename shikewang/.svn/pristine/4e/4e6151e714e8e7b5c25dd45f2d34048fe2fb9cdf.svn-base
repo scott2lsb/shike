@@ -1,0 +1,44 @@
+package com.yshow.shike.fragments;
+import com.yshow.shike.R;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import com.yshow.shike.entity.Count_Info;
+import com.yshow.shike.utils.MyAsyncHttpResponseHandler;
+import com.yshow.shike.utils.SKAsyncApiController;
+import com.yshow.shike.utils.SKResolveJsonUtil;
+
+import java.util.List;
+
+/**
+ * 老师端积分使用记录.UI待完善
+ */
+public class Fragment_Teacher_Zhanghu_duihuan extends Fragment {
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		View view = inflater.inflate(R.layout.fragment_duihuan_record, null);
+		@SuppressWarnings("unused")
+		LinearLayout recordLayout = (LinearLayout) view.findViewById(R.id.duihuan_record_linearlayout);
+        SKAsyncApiController.DuihuanGif(new MyAsyncHttpResponseHandler(getActivity(),
+                true) {
+            @Override
+            public void onSuccess(String json) {
+                super.onSuccess(json);
+                boolean success = SKResolveJsonUtil.getInstance().resolveIsSuccess(json,
+                        getActivity());
+                if (success) {
+                    List<Count_Info> count_Info_pase = SKResolveJsonUtil.getInstance()
+                            .Count_Info_pase(json);
+//                    listview.setAdapter(new MyAdapter(count_Info_pase));
+                }
+            }
+        });
+		return view;
+	  } 
+	}
+
+

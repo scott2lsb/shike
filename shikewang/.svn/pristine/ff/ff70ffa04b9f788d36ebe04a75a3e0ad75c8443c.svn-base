@@ -1,0 +1,87 @@
+package com.yshow.shike.activities;
+import java.util.List;
+import com.yshow.shike.R;
+import com.yshow.shike.UIApplication;
+import com.yshow.shike.utils.Bitmap_Manger_utils;
+import com.yshow.shike.utils.Net_Servse;
+import com.yshow.shike.utils.ProgressDialogUtil;
+import com.yshow.shike.utils.ScreenSizeUtil;
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.os.Handler;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.Window;
+import android.widget.ImageView;
+import android.widget.RelativeLayout.LayoutParams;
+public class ImageActivity extends Activity implements OnClickListener {
+	private Bitmap bitmap;
+	private ImageView large_img;
+	private Net_Servse net_Servse;
+	private ProgressDialogUtil dialogUtil;
+	private Handler handler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			large_img.setImageBitmap(bitmap);
+			dialogUtil.dismiss();
+		};
+	};
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.activity_down_picture);
+		net_Servse = Net_Servse.getInstence();
+		dialogUtil = new ProgressDialogUtil(this);
+		InitData();
+	}
+	private void InitData() {
+		large_img = (ImageView) findViewById(R.id.large_img);
+		ImageView ima_download = (ImageView) findViewById(R.id.ima_download);
+		ima_download.setOnClickListener(this);
+		large_img.setOnClickListener(this);
+		Intent intent = getIntent();
+		Bundle bundle = intent.getExtras();
+		final String Message_Three_url = (String) bundle.get("Message_Three");
+		String isURL = intent.getStringExtra("isURL");
+		if (isURL != null) {
+			bitmap = intent.getParcelableExtra("bitmap");
+			large_img.setImageBitmap(bitmap);
+		} else if (Message_Three_url != null) {
+			dialogUtil.show();
+			new Thread() {
+				public void run() {
+					try {
+						bitmap = net_Servse.getImage(Message_Three_url);
+						if(bitmap != null){
+							handler.sendEmptyMessage(0);
+						}else {
+							dialogUtil.dismiss();
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						dialogUtil.dismiss();
+					}
+				};
+			}.start();
+		} else {
+			List<String> picUrls = UIApplication.getInstance().getPicUrls();
+			String path = picUrls.get(picUrls.size() -1);//是要显示的图片的绝对地址
+			bitmap = Bitmap_Manger_utils.getIntence().press_bitmap(ImageActivity.this,path);
+//			Bitmap decodeFile = path.decodeFile(path,ScreenSizeUtil.getScreenWidth(this,1),ScreenSizeUtil.getScreenHeight(this));
+			large_img.setImageBitmap(bitmap);
+		}
+	}
+	@Override
+	public void onClick(View view) {
+		switch (view.getId()) {
+		case R.id.ima_download:
+			net_Servse.saveBitmap(bitmap, this);
+			break;
+		case R.id.large_img:
+			finish();
+			break;
+		}
+	}
+}

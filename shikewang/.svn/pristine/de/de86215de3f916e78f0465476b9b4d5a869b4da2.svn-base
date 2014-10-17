@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">师课Beta</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="share_wenxin">微信分享</string>
+    <string name="share_message">短信分享</string>
+    <string name="share_email">邮件分享</string>
+    <string name="share_cancle">取  消</string>
+    <string name="share_friend">分享朋友</string>
+    <string name="account_info">账户信息</string>
+    <string name="prepraid_record">充值记录</string>
+    <string name="user_record">使用记录</string>
+<!--     <string-array name="city_labels">
+        <item>北京</item>
+        <item>上海</item>
+        <item>浙江</item>
+        <item>江苏</item>
+        <item>江西</item>
+        <item>福建</item>
+        <item>安徽</item>
+        <item>山东</item>
+    </string-array> -->
+</resources>

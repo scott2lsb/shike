@@ -1,0 +1,287 @@
+package com.yshow.shike.activities;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.animation.TranslateAnimation;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.yshow.shike.R;
+import com.yshow.shike.activities.Activity_My_Board2.Callback;
+import com.yshow.shike.entity.LoginManage;
+import com.yshow.shike.entity.SKStudent;
+import com.yshow.shike.fragments.Fragment_Find_Teacher;
+import com.yshow.shike.fragments.Fragment_Message;
+import com.yshow.shike.fragments.Fragment_My_Teacher;
+import com.yshow.shike.fragments.Fragment_Student_GuanYu;
+import com.yshow.shike.service.MySKService;
+import com.yshow.shike.utils.Animation;
+import com.yshow.shike.utils.Dialog;
+import com.yshow.shike.utils.Dilog_Share;
+import com.yshow.shike.utils.Exit_Login;
+import com.yshow.shike.utils.PartnerConfig;
+import com.yshow.shike.utils.ScreenSizeUtil;
+import com.yshow.shike.utils.ShareDialog;
+import com.yshow.shike.utils.WeixinManager;
+public class Student_Main_Activity extends FragmentActivity implements Callback{
+	private FragmentManager manager;
+	private FragmentTransaction ft;
+	private View undline,bac_huise;
+	private int mea_view;
+	private int startX = 0;
+	private Context context;
+	private SKStudent student; // 获取登录的对象
+	private RelativeLayout in_wo_de_shi_ke;
+	private boolean isUnfold = false;
+	private android.app.Dialog dialog;
+	private TextView tv_mess,tv_my_tea,tv_find_tea,tv_ques,tv_delete,tv_back;//学生端 提问 消息 我的老师 找老师 切换按钮  消息刪除按鈕  退出按钮
+	public static Student_Main_Activity mInstance;
+	private android.widget.RelativeLayout.LayoutParams layoutParams;
+	private View view_button;
+	private WeixinManager weixinManager;
+	private ImageView stu_yd;
+	@Override 
+	protected void onCreate(Bundle saveInsanceState) {
+		super.onCreate(saveInsanceState);
+		setContentView(R.layout.student_main_activity);
+		mInstance = this;
+		context = this;
+		stu_yd = (ImageView) findViewById(R.id.stu_yindao_1);
+//		RelativeLayout stu_main_page = (RelativeLayout) findViewById(R.id.stu_main_page);
+//		YD.getInstence().setYD(listener,context, stu_yd, stu_main_page);
+		weixinManager = new WeixinManager(Student_Main_Activity.this);
+		dialog = new Dilog_Share().Dilog_Anim(context, listener);
+		tv_ques = (TextView)findViewById(R.id.tv_stu_ques);
+		tv_find_tea = (TextView)findViewById(R.id.tv_find_tea);
+		tv_mess = (TextView) findViewById(R.id.tv_mess);
+		tv_my_tea = (TextView) findViewById(R.id.tv_my_tea);
+		view_button = findViewById(R.id.view_button);
+		tv_ques.setOnClickListener(listener);
+		tv_find_tea.setOnClickListener(listener);
+		tv_my_tea.setOnClickListener(listener);
+		tv_mess.setOnClickListener(listener);
+		undline = findViewById(R.id.stu_move_undline);
+		bac_huise = findViewById(R.id.stu_bac_huise);
+		tv_back = (TextView) findViewById(R.id.tv_stumain_back);
+		tv_back.setOnClickListener(listener);
+		findViewById(R.id.three_point).setOnClickListener(listener);
+		findViewById(R.id.tv_information).setOnClickListener(listener);
+		findViewById(R.id.tv_recharge).setOnClickListener(listener);
+		findViewById(R.id.tv_account_information).setOnClickListener(listener);
+		findViewById(R.id.tv_share_student).setOnClickListener(listener);
+		findViewById(R.id.tv_my_shike).setOnClickListener(listener);
+		findViewById(R.id.tv_stu_chongz).setOnClickListener(listener);
+		in_wo_de_shi_ke = (RelativeLayout) findViewById(R.id.in_wo_de_shi_ke);
+		tv_delete = (TextView) findViewById(R.id.tv_delete);
+		tv_delete.setOnClickListener(listener);
+		student = LoginManage.getInstance().getStudent();
+        try {
+    		if(student.getMob() != null){
+    			tv_back.setText("退出");
+    			tv_back.setTextColor(context.getResources().getColor(R.color.button_typeface_color));
+    		}
+		} catch (Exception e) {
+			Toast.makeText(context,"拍照出现异常请重新登录",0).show();
+		}
+		Init_Anim();
+	}
+	private void Init_Anim() {
+		// 初始化红线的长度
+		mea_view = ScreenSizeUtil.getScreenWidth(context,4);
+		int view_hig = ScreenSizeUtil.Dp2Px(context, 48);
+		layoutParams = new RelativeLayout.LayoutParams(mea_view,view_hig);
+		LayoutParams params = new LinearLayout.LayoutParams(mea_view,2);
+		bac_huise.setLayoutParams(layoutParams);
+		undline.setLayoutParams(params);
+		manager = getSupportFragmentManager();
+		ft = manager.beginTransaction();
+		ft.replace(R.id.content,new Stu_madequestionFragment());
+		ft.commit();
+		startService(new Intent(this,MySKService.class));
+	}
+	private OnClickListener listener = new OnClickListener() {
+		@Override
+		public void onClick(View arg0) {
+			ft = manager.beginTransaction();
+			switch (arg0.getId()) {
+			case R.id.tv_stu_ques:
+				tv_delete.setVisibility(View.GONE);
+				view_button.setVisibility(View.GONE);
+				tv_my_tea.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+				tv_find_tea.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+				tv_ques.setTextColor(getResources().getColor(R.color.reg));
+				tv_mess.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+				ft.replace(R.id.content,new Stu_madequestionFragment());
+				StartTransAnim(startX, 0,undline);
+				StartTransAnim(startX, 0,bac_huise);
+				startX = 0;
+				break;
+			// 我的时刻
+			case R.id.tv_my_shike:
+			    Dialog.Intent(context, Activity_MyShiKe.class);
+				break;
+			case R.id.tv_mess:
+					tv_delete.setVisibility(View.VISIBLE);
+					tv_my_tea.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+					tv_find_tea.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+					tv_ques.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+					tv_mess.setTextColor(getResources().getColor(R.color.reg));
+					ft.replace(R.id.content,Fragment_Message.getInstance());
+					StartTransAnim(startX, 1,undline);
+					StartTransAnim(startX, 1,bac_huise);
+					view_button.setVisibility(View.VISIBLE);
+					startX = 1;
+				break;
+			case R.id.tv_my_tea:
+					tv_delete.setVisibility(View.GONE);
+					view_button.setVisibility(View.GONE);
+					tv_my_tea.setTextColor(getResources().getColor(R.color.reg));
+					tv_find_tea.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+					tv_ques.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+					tv_mess.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+					ft.replace(R.id.content,new Fragment_My_Teacher());
+					StartTransAnim(startX, 2,undline);
+					StartTransAnim(startX, 2,bac_huise);
+					startX = 2;
+				break;
+			case R.id.tv_find_tea:
+					tv_delete.setVisibility(View.GONE);
+					view_button.setVisibility(View.GONE);
+					tv_my_tea.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+					tv_find_tea.setTextColor(getResources().getColor(R.color.reg));
+					tv_ques.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+					tv_mess.setTextColor(getResources().getColor(R.color.sk_student_main_color));
+					ft.replace(R.id.content,new Fragment_Find_Teacher());
+					StartTransAnim(startX, 3,undline);
+					StartTransAnim(startX, 3,bac_huise);
+					startX = 3;
+				break;
+			// 充值
+			case R.id.tv_stu_chongz:
+				if(student.getMob() != null){
+					Dialog.Intent(context, Activity_Recharge.class);
+				}else {
+					Dialog.finsh_Reg_Dialog(context);
+				}
+				break;
+			case R.id.three_point:
+				Animation animation = new Animation(Student_Main_Activity.this,in_wo_de_shi_ke, -235,235);
+				animation.initData(isUnfold);
+				isUnfold = !isUnfold;
+				break;	
+			// 个人信息
+			case R.id.tv_information:
+				if(student.getMob() != null){
+					Dialog.Intent(context, Age_Person_Info.class);
+				}else {
+					Dialog.finsh_Reg_Dialog(context);
+				}
+				break;
+			// 关于师课
+			case R.id.tv_recharge:   
+				Dialog.Intent(context, Fragment_Student_GuanYu.class);
+				break;
+			// 账户信息
+           case R.id.tv_account_information:
+        	   if(student.getMob() != null){
+        		   Dialog.Intent(context,Activity_Student_Account_Message.class);
+        	   }else {
+        		   Dialog.finsh_Reg_Dialog(context);
+		     	}
+				break;
+			 // 分享按钮
+			case R.id.tv_share_student:
+				dialog.show();
+				break;
+				//完成注册按钮  体验用户给出相应的提示
+			case R.id.tv_stumain_back:
+				if(student.getMob() != null){
+					Exit_Login.getInLogin().Back_Login(context);
+				}else {
+					Dialog.Intent(context, StudentRegisterActivity.class);
+				}
+				break;
+			//引导页点击事件
+			case R.id.stu_yindao_1:
+				stu_yd.setVisibility(View.GONE);
+				break;
+			//发送删除信息的消息
+			case R.id.tv_delete:      
+				Fragment_Message.handler.sendEmptyMessage(5168);
+				break;
+			//Dialog 里面微信分享的按钮	
+			case R.id.share_dialog_weixin:
+				dialog.dismiss();
+				weixinManager.shareWeixin();
+				break;
+			//Dialog 里面短信分享的按钮	
+			case R.id.share_dialog_message:
+				ShareDialog.sendSMS(context,PartnerConfig.CONTEBT);
+				break;
+			//Dialog 里面e_mail分享的按钮	
+			case R.id.share_dialog_email:
+				dialog.dismiss();
+				ShareDialog.openCLD(PartnerConfig.CONTEBT,context);
+				break;
+			case R.id.share_weixin_friend:
+				dialog.dismiss();
+				weixinManager.shareWeixinCircle();
+				break;
+			//Dialog 里面取消分享的按钮		
+			case R.id.share_dialog_cancle:
+				dialog.dismiss();
+				break;
+			}
+			ft.commit();
+		}
+	};
+	//开始执行动画的位移
+		private void StartTransAnim(float fromXDelta,float toXDelta,View view) {
+			TranslateAnimation anim = new TranslateAnimation(fromXDelta*mea_view, toXDelta*mea_view, 0, 0);
+			anim.setDuration(500);
+			anim.setFillAfter(true);
+			view.startAnimation(anim);
+		}
+			/**
+			 * 分发按键事件, 按下键盘上返回按钮
+			 */
+			@Override
+			public boolean onKeyDown(int keyCode, KeyEvent event) {
+				if (keyCode == KeyEvent.KEYCODE_BACK
+						&& event.getAction() == KeyEvent.ACTION_DOWN) {
+					Exit_Login.getInLogin().Back_Key(context);
+					return true;
+				}
+				return super.onKeyDown(keyCode, event);
+			}
+    /**
+     *  从题版发完消息后跳转到消息页面
+     */
+	@Override
+	public void back(String str) {
+		FragmentTransaction beginTransaction = manager.beginTransaction();
+		beginTransaction.replace(R.id.content,Fragment_Message.getInstance());
+		beginTransaction.commitAllowingStateLoss();
+		StartTransAnim(startX, 1,undline);
+		StartTransAnim(startX, 1,bac_huise);
+	}
+//	@Override
+//	protected void onResume() {
+//		super.onResume();
+//		student = LoginManage.getInstance().getStudent();
+//		if(student.getMob() != null){
+//			tv_back.setText("退出");
+//			tv_back.setTextColor(context.getResources().getColor(R.color.button_typeface_color));
+//		}
+//	}
+}

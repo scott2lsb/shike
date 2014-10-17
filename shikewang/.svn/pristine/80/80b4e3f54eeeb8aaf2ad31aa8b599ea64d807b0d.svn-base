@@ -1,0 +1,92 @@
+package com.yshow.shike.activities;
+import java.io.File;
+
+import com.yshow.shike.R;
+import com.yshow.shike.utils.Auto_Login_User;
+import com.yshow.shike.utils.Dialog;
+import com.yshow.shike.utils.FileService;
+import android.os.Bundle;
+import android.view.Window;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.widget.ImageView;
+import android.app.Activity;
+public class StartingUp extends Activity {
+	private ImageView view;
+	private String save_one_auto; // 判断用户是否是第一次自动登录
+	private Auto_Login_User auto_Login; // 自动登录用户如不是第一次就联网登录
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		setContentView(R.layout.welcome);
+		save_one_auto = new FileService(this).getSp_Date("auto_user");
+		view = (ImageView) findViewById(R.id.image_view);
+		auto_Login = new Auto_Login_User(this);
+		User_Login();
+	}
+	/**
+	 * 检查登录用户是否已登录过
+	 */
+	private void User_Login() {
+		if(save_one_auto.equals("")){
+			Start_Anim();
+		}else {
+			auto_Login.auto_login_info();
+		}
+//        FileService fileService = new FileService(this);
+//        String Use_Name = fileService.getSp_Date("name");
+//        String Use_Pass = fileService.getSp_Date("pass");
+//        // 登录过的用户
+//		if(!Use_Name.equals("") && !Use_Pass.equals("")){
+//			SKAsyncApiController.skLogin(Use_Name, Use_Pass,new AsyncHttpResponseHandler(){
+//				@Override
+//				public void onSuccess(String json) {
+//					super.onSuccess(json);
+//					boolean Login_Success = SKResolveJsonUtil.resolveIsSuccess(json,StartingUp.this);
+//					if(Login_Success){
+//						LoginManage instance = LoginManage.getInstance();
+//						SKStudent student = SKResolveJsonUtil.resolveLoginInfo(json);
+//						instance.setStudent(student);
+//						if(instance.isTeacher()){
+//							//是老师就登陆老师界面
+//							Dialog.Intent(StartingUp.this,Teather_Main_Activity.class);
+//						}else {
+//							//学生登录
+//							Dialog.Intent(StartingUp.this,Student_Main_Activity.class);
+//							UIApplication.getInstance().setAuid_flag(true);
+//						}
+//						finish();
+//					}else {
+//						Dialog.Intent(StartingUp.this,Login_Reg_Activity.class);
+//						finish();
+//					}
+//				}
+//			});
+//		}else {
+//			Start_Anim();
+//		}
+	}
+	// 开机动画
+	private void Start_Anim() {
+		AlphaAnimation animation = new AlphaAnimation(0.01f, 1.0f);
+		animation.setDuration(1000);
+		view.setAnimation(animation);
+		animation.start();
+		animation.setAnimationListener(new AnimationListener() {
+			@Override
+			public void onAnimationStart(Animation animation) {
+			}			
+			@Override
+			public void onAnimationRepeat(Animation animation) {
+			}		
+			@Override
+			public void onAnimationEnd(Animation animation) {
+				Dialog.Intent(StartingUp.this,Login_Reg_Activity.class);
+				finish();
+			}
+		});
+	}
+}
+ 

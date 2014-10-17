@@ -1,0 +1,110 @@
+package com.yshow.shike.activities;
+import java.lang.reflect.Type;
+import android.app.Activity;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.View.OnClickListener;
+import android.widget.Toast;
+import com.alipay.android.app.sdk.AliPay;
+import com.yshow.shike.utils.Result;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.yshow.shike.R;
+import com.yshow.shike.entity.Pay_Comm;
+import com.yshow.shike.entity.Pay_Comm.Pay_Comm_info;
+import com.yshow.shike.utils.Payment_Utils;
+import com.yshow.shike.utils.SKAsyncApiController;
+import com.yshow.shike.utils.SKResolveJsonUtil;
+
+import android.view.View;
+public class Activity_Recharge extends Activity{
+	private Payment_Utils pay_util;
+	private final int RQF_PAY = 1;
+	private final int PAY_SUCC = 2;
+	Handler mHandler = new Handler() {
+		public void handleMessage(android.os.Message msg) {
+			Result result = new Result((String) msg.obj);
+			switch (msg.what) {
+			case RQF_PAY:
+				Toast.makeText(Activity_Recharge.this, result.getResult(),0).show();
+				break;
+			case PAY_SUCC:
+					Toast.makeText(Activity_Recharge.this,"Ö§¸¶³É¹¦",0).show();
+				break;
+			}
+		};
+	};
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_recharge);
+		initData();
+	}
+	private void initData() {
+		pay_util = Payment_Utils.getIntence();
+		findViewById(R.id.re_five_bai).setOnClickListener(listener);
+		findViewById(R.id.re_one_qian).setOnClickListener(listener);
+		findViewById(R.id.iv_two_qian).setOnClickListener(listener);
+		findViewById(R.id.re_five_qain).setOnClickListener(listener);
+		findViewById(R.id.tv_buttom_back).setOnClickListener(listener);
+	}
+	private OnClickListener listener = new OnClickListener() {
+		@Override
+		public void onClick(View v) {
+            switch (v.getId()) {
+			case R.id.re_five_bai:
+				GetComm_Info("1");
+				break;
+			case R.id.re_one_qian:
+				GetComm_Info("2");
+				break;
+			case R.id.iv_two_qian:
+				GetComm_Info("3");
+				break;
+			case R.id.re_five_qain:
+				GetComm_Info("4");
+				break;
+			case R.id.tv_buttom_back:
+				finish();
+				break;
+			}
+		}
+	};
+	private void Comm_Pay(String info) {
+		final String orderInfo = pay_util.Order_Process(info).trim();
+		new Thread() {
+			public void run() {
+				AliPay alipay = new AliPay(Activity_Recharge.this, mHandler);
+				String result = alipay.pay(orderInfo);
+				Message msg = new Message();
+				msg.obj = result;
+				if(result != null){
+					String returnCode = result.substring(14, 18);
+					if(returnCode.equals("6001")){
+						msg.what = RQF_PAY;
+					}else {
+						msg.what = PAY_SUCC;
+					}
+					mHandler.sendMessage(msg);
+				}
+			}
+		}.start();
+	}
+	private void GetComm_Info(String itemid) {
+        SKAsyncApiController.Get_Comm_Info(itemid,new AsyncHttpResponseHandler(){
+     	   public void onSuccess(String json) {
+     		   boolean Success = SKResolveJsonUtil.getInstance().resolveIsSuccess(json, Activity_Recharge.this);
+     		   if(Success){
+	   				Type tp = new TypeToken<Pay_Comm>() {}.getType();
+					Gson gs = new Gson();
+					Pay_Comm pay_comm = gs.fromJson(json, tp);
+					Pay_Comm_info comm_data = pay_comm.getData();
+					String info = pay_util.getNewOrderInfo(comm_data);
+					Comm_Pay(info);
+     		   }
+	       };
+        });
+	}
+}

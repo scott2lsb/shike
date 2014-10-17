@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/register1"
+    android:orientation="vertical" >
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp" >
+
+        <android.support.v4.view.PagerTitleStrip
+            android:id="@+id/pagertitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="-15dp"
+            android:textColor="#C800FF"
+            android:textSize="30px" >
+        </android.support.v4.view.PagerTitleStrip>
+    </android.support.v4.view.ViewPager>
+   <LinearLayout
+       android:id="@+id/ll_Buttom"
+       android:layout_width="fill_parent"
+       android:layout_height="wrap_content"
+       android:layout_alignParentBottom="true"      
+       android:layout_marginBottom="-18dp"
+       android:background="@color/sk_student_main_color"
+       android:orientation="horizontal"
+       >
+     <View
+         android:layout_width="150dp"
+         android:layout_height="1dp"
+         />
+     <TextView
+         android:id="@+id/tv_start_buttom"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:drawablePadding="2dp"
+         android:drawableTop="@drawable/select_back1"
+         android:padding="3dp"
+         android:text="返回"
+         android:textColor="@color/button_typeface_color" />
+     <View
+         android:layout_width="120dp"
+         android:layout_height="1dp"
+         />
+
+     <LinearLayout
+         android:id="@+id/ll_donghua"
+         android:layout_width="92dp"
+         android:layout_height="40dp"        
+        >
+    <ImageView       
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+         android:layout_marginTop="5dp"
+        android:background="@drawable/select_trees_points" />
+    </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
